@@ -1,3 +1,7 @@
+process.env.WX_APPID = 'wx05942a03fb56a115';
+process.env.WX_APPSECRET = '61ce1d0347c678153316a8157c8fe02a';
+
+
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
@@ -11,6 +15,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
 app.use(logger);
+
+let accessTokenCache = null;
+let accessTokenExpireTime = 0;
 
 // 首页
 app.get("/", async (req, res) => {
@@ -48,24 +55,24 @@ app.get("/api/wx_openid", async (req, res) => {
     res.send(req.headers["x-wx-openid"]);
   }
 });
-process.env.WX_APPID = 'wx05942a03fb56a115';
-process.env.WX_APPSECRET = '61ce1d0347c678153316a8157c8fe02a';
-//获取微信 access_token
-app.get("/api/wx_access_token", async (req, res) => {
-  const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${process.env.WX_APPID}&secret=${process.env.WX_APPSECRET}`;
-  const result = await axios.get(url);
 
-  res.send(result.data);
-});
 // 获取jsapi_ticket
 app.get("/api/wx_jsapi_ticket", async (req, res) => {
-  const url1 = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${process.env.WX_APPID}&secret=${process.env.WX_APPSECRET}`;
-  const result1 = await axios.get(url1);
-  let access_token = result1.data.access_token;
-  const url = `https://api.weixin.qq.com/cgi-bin/ticket/access_token=${access_token}&type=jsapi?`;
-  const result = await axios.get(url);
-  res.send(result.data);
+  let accessToken = accessTokenCache;
+  if (!accessToken || Date.now() >= accessTokenExpireTime) {
+    // 如果accessToken不存在或者已过期，重新获取accessToken
+    const tokenUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${process.env.WX_APPID}&secret=${process.env.WX_APPSECRET}`;
+    const tokenResult = await axios.get(tokenUrl);
+    accessToken = tokenResult.data.access_token;
+    accessTokenExpireTime = Date.now() + 7200 * 1000; // 设置accessToken过期时间为7200秒后
+    accessTokenCache = accessToken;
+  }
+
+  const ticketUrl = `https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${accessToken}&type=jsapi`;
+  const ticketResult = await axios.get(ticketUrl);
+  res.send(ticketResult.data);
 });
+
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
