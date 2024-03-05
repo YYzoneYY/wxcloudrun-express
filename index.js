@@ -61,7 +61,7 @@ app.get("/api/wx_openid", async (req, res) => {
 // 获取jsapi_ticket
 app.get("/api/wx_jsapi_ticket", async (req, res) => {
   let ticket = ticketCache;
-  let ticketExpireTime = ticketExpireTime;
+  // let ticketExpireTime = Date.now();
   if (!ticket || Date.now() >= ticketExpireTime) {
     // 如果ticket不存在或者已过期，重新获取ticket
     let accessToken = accessTokenCache;
