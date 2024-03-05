@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { init: initDB, Counter } = require("./db");
-
+const axios = require('axios');
 const logger = morgan("tiny");
 
 const app = express();
@@ -47,6 +47,14 @@ app.get("/api/wx_openid", async (req, res) => {
   if (req.headers["x-wx-source"]) {
     res.send(req.headers["x-wx-openid"]);
   }
+});
+process.env.WX_APPID = 'wx05942a03fb56a115';
+process.env.WX_APPSECRET = '61ce1d0347c678153316a8157c8fe02a';
+//获取微信 access_token
+app.get("/api/wx_access_token", async (req, res) => {
+  const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${process.env.WX_APPID}&secret=${process.env.WX_APPSECRET}`;
+  const result = await axios.get(url);
+  res.send(result.data);
 });
 
 const port = process.env.PORT || 80;
