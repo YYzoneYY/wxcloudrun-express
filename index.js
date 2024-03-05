@@ -56,7 +56,12 @@ app.get("/api/wx_access_token", async (req, res) => {
   const result = await axios.get(url);
   res.send(result.data);
 });
-
+// 获取jsapi_ticket
+app.get("/api/wx_jsapi_ticket", async (req, res) => {
+  const url = `https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi`;
+  const result = await axios.get(url);
+  res.send(result.data);
+});
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
