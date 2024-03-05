@@ -54,11 +54,15 @@ process.env.WX_APPSECRET = '61ce1d0347c678153316a8157c8fe02a';
 app.get("/api/wx_access_token", async (req, res) => {
   const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${process.env.WX_APPID}&secret=${process.env.WX_APPSECRET}`;
   const result = await axios.get(url);
+
   res.send(result.data);
 });
 // 获取jsapi_ticket
 app.get("/api/wx_jsapi_ticket", async (req, res) => {
-  const url = `https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi`;
+  const url1 = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${process.env.WX_APPID}&secret=${process.env.WX_APPSECRET}`;
+  const result1 = await axios.get(url1);
+  let access_token = result1.data.access_token;
+  const url = `https://api.weixin.qq.com/cgi-bin/ticket/access_token=${access_token}&type=jsapi?`;
   const result = await axios.get(url);
   res.send(result.data);
 });
